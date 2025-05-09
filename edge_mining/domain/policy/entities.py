@@ -28,14 +28,14 @@ class AutomationRule:
         battery_soc_lt = self.conditions.get("battery_soc_lt") # For stopping
 
         if battery_soc_gt is not None and energy_state.battery:
-             if energy_state.battery.state_of_charge <= Percentage(battery_soc_gt):
-                 return False # Condition not met
+            if energy_state.battery.state_of_charge <= Percentage(battery_soc_gt):
+                return False # Condition not met
 
         if solar_forecast_gt is not None and forecast:
-             # Assuming forecast.predicted_watts is a list or similar
-             # This needs refinement based on ForecastData structure
-             if not any(p > Watts(solar_forecast_gt) for p in forecast.predicted_watts.values()): # Simplistic check
-                 return False # Condition not met
+            # Assuming forecast.predicted_power is a list or similar
+            # This needs refinement based on ForecastData structure
+            if not any(p > Watts(solar_forecast_gt) for p in forecast.predicted_power.values()): # Simplistic check
+                return False # Condition not met
 
         if battery_soc_lt is not None and energy_state.battery:
             if energy_state.battery.state_of_charge >= Percentage(battery_soc_lt):

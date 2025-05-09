@@ -102,7 +102,7 @@ class TerminalLogger(LoggerPort):
             print(f.read())
         print("\n\n")
 
-        print("Hey! 👋 I'm Edge Mining. Let's put that wasted energy to good use and generate some satoshis ⚡⛏️")
+        print("Hey! 👋 I'm Edge Mining. Mine your energy! ⚡⛏️")
         print("\n\n")
 
     def shutdown(self):

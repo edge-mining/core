@@ -1,7 +1,7 @@
 import logging
 from typing import List, Optional, Dict, Any
 
-from edge_mining.domain.common import EntityId
+from edge_mining.domain.common import EntityId, Watts
 from edge_mining.domain.miner.entities import Miner
 from edge_mining.domain.miner.common import MinerId
 from edge_mining.domain.policy.common import RuleType
@@ -32,10 +32,10 @@ class ConfigurationService:
         self.logger = logger
 
     # --- Miner Management ---
-    def add_miner(self, miner_id: MinerId, name: str, ip_address: Optional[str] = None) -> Miner:
+    def add_miner(self, miner_id: MinerId, name: str, ip_address: Optional[str] = None, power_consumption: Optional[Watts] = None) -> Miner:
         self.logger.info(f"Adding miner {miner_id} ({name})")
         
-        miner = Miner(id=miner_id, name=name, ip_address=ip_address)
+        miner = Miner(id=miner_id, name=name, ip_address=ip_address, power_consumption=power_consumption)
         
         # TODO: Add validation (e.g., check if ID already exists)
         

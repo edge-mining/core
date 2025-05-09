@@ -8,9 +8,7 @@ from edge_mining.application.services.configuration_service import Configuration
 from edge_mining.domain.miner.common import MinerId
 from edge_mining.domain.exceptions import MinerNotFoundError
 
-from edge_mining.adapters.domain.miner.fast_api.schemas import (
-    MinerResponseSchema, MinerCreateSchema
-)
+from edge_mining.adapters.domain.miner.fast_api.schemas import MinerSchema
 
 # Import the dependency injection function defined in main_api.py
 from edge_mining.adapters.infrastructure.api.main_api import get_config_service
@@ -18,7 +16,7 @@ from edge_mining.adapters.infrastructure.api.main_api import get_config_service
 router = APIRouter()
 
 
-@router.get("/miners", response_model=List[MinerResponseSchema]) # Use DTOs directly or a Pydantic schema
+@router.get("/miners", response_model=List[MinerSchema]) # Use DTOs directly or a Pydantic schema
 async def get_miners_list(
     config_service: Annotated[ConfigurationService, Depends(get_config_service)]
 ):
@@ -30,10 +28,11 @@ async def get_miners_list(
         response_miners = []
         for miner in miners:
             response_miners.append(
-                MinerResponseSchema(
+                MinerSchema(
                     id=miner.id,
                     name=miner.name,
                     status=miner.status,
+                    power_consumption=miner.power_consumption,
                     ip_address=miner.ip_address
                 )
             )
@@ -42,7 +41,7 @@ async def get_miners_list(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/miners/{miner_id}", response_model=MinerCreateSchema)
+@router.get("/miners/{miner_id}", response_model=MinerSchema)
 async def get_miner_details(
     miner_id: MinerId,
     config_service: Annotated[ConfigurationService, Depends(get_config_service)]
@@ -53,7 +52,7 @@ async def get_miner_details(
         if miner is None:
             raise HTTPException(status_code=404, detail="Miner not found")
 
-        response = MinerCreateSchema(
+        response = MinerSchema(
             id=miner.id,
             name=miner.name,
             ip_address=miner.ip_address
@@ -65,20 +64,20 @@ async def get_miner_details(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/miners", response_model=MinerResponseSchema)
+@router.post("/miners", response_model=MinerSchema)
 async def add_miner(
-    miner: MinerCreateSchema,
+    miner: MinerSchema,
     config_service: Annotated[ConfigurationService, Depends(get_config_service)]
 ):
     """Add a new miner."""
     try:
         new_miner = config_service.add_miner(
-            miner_id=miner.miner_id,
+            miner_id=miner.id,
             name=miner.name,
             ip_address=miner.ip_address
         )
 
-        response = MinerResponseSchema(
+        response = MinerSchema(
             id=new_miner.id,
             name=new_miner.name,
             status=new_miner.status,

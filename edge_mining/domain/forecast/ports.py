@@ -7,6 +7,6 @@ from edge_mining.domain.forecast.value_objects import ForecastData
 
 class ForecastProviderPort(ABC):
     @abstractmethod
-    def get_solar_forecast(self, latitude: Optional[float], longitude: Optional[float], capacity_kwp: Optional[float]) -> Optional[ForecastData]:
+    def get_solar_forecast(self) -> Optional[ForecastData]:
         """Fetches the solar energy production forecast."""
         raise NotImplementedError

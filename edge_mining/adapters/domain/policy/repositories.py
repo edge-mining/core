@@ -89,7 +89,7 @@ class SqliteOptimizationPolicyRepository(BaseSqliteRepository, OptimizationPolic
                 target_miner_ids=target_ids
             )
         except (json.JSONDecodeError, ValueError, KeyError, TypeError) as e:
-            self.logger.error(f"Error deserializing Policy from DB line: {dict(row)}. Error: {e}", exc_info=True)
+            self.logger.error(f"Error deserializing Policy from DB line: {dict(row)}. Error: {e}")
             return None
 
     def add(self, policy: OptimizationPolicy) -> None:

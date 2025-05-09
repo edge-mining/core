@@ -42,7 +42,7 @@ The project uses **Hexagonal Architecture (Ports and Adapters)** to clearly sepa
     ```
 4.  **Configure environment variables:**
     Copy `.env.example` to `.env` and change the values ​​according to your configuration (API keys, select the desired adapters).
-    **Note:** If you use the `home_assistant_api` adapter for energy monitoring, make sure to configure the following correctly:
+    **Note:** If you use the `home_assistant_api` adapter for energy monitoring and forecast provider, make sure to configure the following correctly:
     - `HOME_ASSISTANT_URL` and `HOME_ASSISTANT_TOKEN`.
     - The `HA_ENTITY_*` IDs corresponding to your sensors in Home Assistant.
     - **Important:** The `HA_ENTITY_HOUSE_CONSUMPTION` entity should represent the house consumption *excluding* the miner load. You may need to create a `template sensor` in Home Assistant for this.
@@ -74,7 +74,7 @@ The API will be available at `http://localhost:8001` (or the configured address 
 
 - **Energy Monitor:** `dummy`, `home_assistant` (*new*)
 - **Miner Controller:** `dummy`
-- **Forecast Provider:** `dummy`
+- **Forecast Provider:** `dummy`, `home_assistant` (*new*)
 - **Persistence:** `in_memory`, `sqlite` (*new*)
 - **Notification:** `dummy`, `telegram` (*new*)
 - **Interaction:** `cli`, `api`(*new*)

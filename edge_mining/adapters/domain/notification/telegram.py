@@ -80,5 +80,5 @@ class TelegramNotifier(NotificationPort):
             return False
         except Exception as e:
             # Gestisce altri errori (es. rete)
-            self.logger.error(f"Unexpected error sending notification via Telegram: {e}", exc_info=True)
+            self.logger.error(f"Unexpected error sending notification via Telegram: {e}")
             return False

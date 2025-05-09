@@ -56,7 +56,7 @@ class SqliteHomeLoadsProfileRepository(BaseSqliteRepository, HomeLoadsProfileRep
                 devices=devices
             )
         except (json.JSONDecodeError, ValueError, KeyError, TypeError) as e:
-            self.logger.error(f"Error deserializing HomeLoadsProfile from DB line: {dict(row)}. Error: {e}", exc_info=True)
+            self.logger.error(f"Error deserializing HomeLoadsProfile from DB line: {dict(row)}. Error: {e}")
             return None
 
 

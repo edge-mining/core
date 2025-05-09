@@ -23,7 +23,7 @@ class InMemorySettingsRepository(SettingsRepository):
         self._settings = copy.deepcopy(settings)
 
 class SqliteSettingsRepository(BaseSqliteRepository, SettingsRepository):
-    _SETTINGS_ID = "global_settings" # ID fisso per l'unica riga di settings
+    _SETTINGS_ID = "global_settings" # We dont have different users, so we use a single ID.
 
     def get_settings(self) -> Optional[SystemSettings]:
         self.logger.debug("Getting settings from SQLite.")
