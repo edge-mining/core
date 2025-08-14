@@ -8,5 +8,6 @@ from edge_mining.domain.common import Timestamp, ValueObject
 
 @dataclass(frozen=True)
 class MiningReward(ValueObject):
+    """Value Object for a mining reward."""
     amount: Satoshi
     timestamp: Timestamp = field(default_factory=datetime.now)

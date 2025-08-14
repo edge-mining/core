@@ -12,6 +12,7 @@ from edge_mining.domain.miner.value_objects import HashRate
 
 @dataclass
 class MiningSession:
+    """Entity for a mining session."""
     id: EntityId = field(default_factory=uuid.uuid4)
     miner_id: MinerId
     start_time: Timestamp

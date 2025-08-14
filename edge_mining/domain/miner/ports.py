@@ -9,6 +9,7 @@ from edge_mining.domain.miner.common import MinerId, MinerStatus
 from edge_mining.domain.miner.value_objects import HashRate
 
 class MinerControlPort(ABC):
+    """Port for the Miner Control."""
     @abstractmethod
     def start_miner(self, miner_id: MinerId) -> bool:
         """Attempts to start the specified miner. Returns True on success request."""
@@ -35,6 +36,7 @@ class MinerControlPort(ABC):
         raise NotImplementedError
 
 class MinerRepository(ABC):
+    """Port for the Miner Repository."""
     @abstractmethod
     def generate_id(self) -> MinerId:
         """Generates a new unique ID for a miner."""

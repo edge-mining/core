@@ -12,6 +12,7 @@ from edge_mining.domain.energy.value_objects import EnergyStateSnapshot
 
 @dataclass
 class AutomationRule:
+    """Entity for an automation rule."""
     id: EntityId = field(default_factory=uuid.uuid4)
     name: str = ""
     conditions: Dict[str, Any] = field(default_factory=dict) # e.g., {"battery_soc_gt": 80, "solar_forecast_gt": 1000}

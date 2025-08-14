@@ -14,6 +14,7 @@ from edge_mining.domain.energy.value_objects import EnergyStateSnapshot
 
 @dataclass
 class OptimizationPolicy:
+    """Aggregate Root for the Optimization Policy."""
     id: EntityId = field(default_factory=uuid.uuid4)
     name: str = ""
     description: Optional[str] = None
@@ -42,7 +43,7 @@ class OptimizationPolicy:
         # 1. If miner is OFF, check START rules. If any match -> START_MINING
         # 2. If miner is ON, check STOP rules. If any match -> STOP_MINING
         # 3. Otherwise -> MAINTAIN_STATE
-        
+
         # This is the location where the magic happens! 🪄​🎩
 
         if current_miner_status in [MinerStatus.OFF, MinerStatus.ERROR, MinerStatus.UNKNOWN]:

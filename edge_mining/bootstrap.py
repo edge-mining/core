@@ -1,6 +1,7 @@
 """Bootstrap operations"""
 import os
 
+from edge_mining.domain.energy.common import EnergyMonitorAdapter
 from edge_mining.domain.energy.ports import EnergyMonitorPort
 from edge_mining.domain.miner.common import MinerId, MinerStatus
 from edge_mining.domain.miner.ports import MinerControlPort, MinerRepository
@@ -12,7 +13,7 @@ from edge_mining.domain.policy.ports import OptimizationPolicyRepository
 from edge_mining.domain.user.ports import SettingsRepository
 
 from edge_mining.shared.settings.common import (
-    PersistenceAdapter, EnergyMonitorAdapter, MinerControllerAdapter, ForecastProviderAdapter,
+    PersistenceAdapter, MinerControllerAdapter, ForecastProviderAdapter,
     HomeForecastProviderAdapter, NotificationAdapter, PerformaceTrackerAdapter, ExternalServiceAdapter
 )
 

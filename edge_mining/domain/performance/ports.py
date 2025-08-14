@@ -8,6 +8,7 @@ from edge_mining.domain.miner.value_objects import HashRate
 from edge_mining.domain.performance.values_objects import MiningReward
 
 class MiningPerformanceTrackerPort(ABC):
+    """Port for the Mining Performance Tracker."""
     @abstractmethod
     def get_current_hashrate(self, miner_id: MinerId) -> Optional[HashRate]:
         """Gets the current hashrate from the pool or device."""

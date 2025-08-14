@@ -15,6 +15,7 @@ from edge_mining.adapters.infrastructure.persistence.sqlite import BaseSqliteRep
 # Simple In-Memory implementation for testing and basic use
 
 class InMemoryHomeLoadsProfileRepository(HomeLoadsProfileRepository):
+    """In-Memory implementation for the Home Loads Profile Repository."""
     def __init__(self, initial_profile: Optional[HomeLoadsProfile] = None):
         self._profile: Optional[HomeLoadsProfile] = copy.deepcopy(initial_profile)
 
@@ -25,6 +26,7 @@ class InMemoryHomeLoadsProfileRepository(HomeLoadsProfileRepository):
         self._profile = copy.deepcopy(profile)
 
 class SqliteHomeLoadsProfileRepository(BaseSqliteRepository, HomeLoadsProfileRepository):
+    """SQLite implementation for the Home Loads Profile Repository."""
     _DEFAULT_PROFILE_UUID = uuid.UUID("00000000-0000-0000-0000-000000000001") # UUID fisso per il profilo
 
     def _device_to_dict(self, device: LoadDevice) -> Dict[str, Any]:
@@ -35,13 +37,15 @@ class SqliteHomeLoadsProfileRepository(BaseSqliteRepository, HomeLoadsProfileRep
         }
 
     def _dict_to_device(self, data: Dict[str, Any]) -> LoadDevice:
-         return LoadDevice(
-             id=uuid.UUID(data['id']),
-             name=data['name'],
-             type=data['type']
-         )
+        """Convert a dictionary to a LoadDevice."""
+        return LoadDevice(
+            id=uuid.UUID(data['id']),
+            name=data['name'],
+            type=data['type']
+        )
 
     def _row_to_profile(self, row: sqlite3.Row) -> Optional[HomeLoadsProfile]:
+        """Convert a row to a HomeLoadsProfile."""
         if not row:
             return None
         try:
@@ -61,6 +65,7 @@ class SqliteHomeLoadsProfileRepository(BaseSqliteRepository, HomeLoadsProfileRep
 
 
     def get_profile(self) -> Optional[HomeLoadsProfile]:
+        """Get the home load profile from SQLite."""
         self.logger.debug("Getting home load profile from SQLite.")
         sql = "SELECT * FROM home_profiles WHERE id = ?"
         conn = self._get_connection()
@@ -80,6 +85,7 @@ class SqliteHomeLoadsProfileRepository(BaseSqliteRepository, HomeLoadsProfileRep
             if conn: conn.close()
 
     def save_profile(self, profile: HomeLoadsProfile) -> None:
+        """Save the home load profile to SQLite."""
         self.logger.debug(f"Saving home load profile '{profile.name}' to SQLite.")
         sql = "INSERT OR REPLACE INTO home_profiles (id, name, devices_json) VALUES (?, ?, ?)"
         conn = self._get_connection()
@@ -96,4 +102,5 @@ class SqliteHomeLoadsProfileRepository(BaseSqliteRepository, HomeLoadsProfileRep
             self.logger.error(f"SQLite error saving home profile: {e}")
             raise ConfigurationError(f"DB error saving home profile: {e}") from e
         finally:
-            if conn: conn.close()
+            if conn:
+                conn.close()

@@ -9,6 +9,7 @@ from edge_mining.domain.home_load.entities import LoadDevice
 
 @dataclass
 class HomeLoadsProfile:
+    """Aggregate Root for the Home Loads."""
     id: EntityId = field(default_factory=uuid.uuid4)
     name: str = "Default Home Profile"
     devices: Dict[EntityId, LoadDevice] = field(default_factory=dict)

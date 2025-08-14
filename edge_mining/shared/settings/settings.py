@@ -1,6 +1,6 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional
 import os
+from typing import Optional, List
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Using pydantic-settings for easy environment variable loading
 
@@ -10,9 +10,10 @@ DEFAULT_SQLITE_DB_PATH = os.path.join(os.path.dirname(
 ), 'edgemining.db')
 
 class AppSettings(BaseSettings):
+    """Settings for the Edge Mining application."""
     # Application settings
     log_level: str = "INFO"
-    
+
     timezome: str = "Europe/Rome" # Default timezone
 
     # Adapters Configuration (select which ones to use)
@@ -48,7 +49,7 @@ class AppSettings(BaseSettings):
     # Home Assistant Adapter Settings (if energy_monitor_adapter=home_assistant)
     home_assistant_url: Optional[str] = None # e.g., http://homeassistant.local:8123
     home_assistant_token: Optional[str] = None # Long-Lived Access Token
-    
+
     # Energy Monitor Adapter (if energy_monitor_adapter=home_assistant)
     # --- Entity IDs ---
     ha_entity_solar_production: Optional[str] = None # e.g., sensor.solar_power (W or kW)
@@ -63,7 +64,7 @@ class AppSettings(BaseSettings):
     ha_unit_battery_power: str = "W" # "W" or "kW"
     # --- Optional: Battery Capacity (if not available via an entity) ---
     ha_battery_nominal_capacity_wh: Optional[float] = None # e.g., 10000.0
-    
+
     # Forecast Provider Adapter (if forecast_provider_adapter=home_assistant)
     # --- Entity IDs ---
     ha_entity_solar_forecast_power_actual_h: Optional[str] = None # e.g., sensor.solar_forecast_power_actual_h (W or kW)

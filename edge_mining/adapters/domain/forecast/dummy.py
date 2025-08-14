@@ -9,15 +9,16 @@ from edge_mining.domain.forecast.ports import ForecastProviderPort
 from edge_mining.domain.forecast.value_objects import ForecastData
 
 class DummyForecastProvider(ForecastProviderPort):
+    """Dummy implementation of the ForecastProviderPort."""
     def __init__(self, latitude: float = None, longitude: float = None, capacity_kwp: float = 0.0):
         """Initializes the DummyForecastProvider."""
         self.latitude = latitude
         self.longitude = longitude
         self.capacity_kwp = capacity_kwp
         # You can set default values or use the ones from settings if needed
-    
-    """Generates a plausible fake solar forecast."""
+
     def get_solar_forecast(self) -> Optional[ForecastData]:
+        # Generates a plausible fake solar forecast.
         print(f"DummyForecastProvider: Generating forecast for {self.latitude},{self.longitude} ({self.capacity_kwp} kWp)")
         now = datetime.now()
         predictions: Dict[Timestamp, Watts] = {}

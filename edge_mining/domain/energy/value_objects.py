@@ -8,11 +8,13 @@ from edge_mining.domain.common import Watts, WattHours, Percentage, Timestamp, V
 
 @dataclass(frozen=True)
 class EnergyReading(ValueObject):
+    """Value Object for an energy reading."""
     value: Watts
     timestamp: Timestamp = field(default_factory=datetime.now)
 
 @dataclass(frozen=True)
 class BatteryState(ValueObject):
+    """Value Object for a battery state."""
     state_of_charge: Percentage
     nominal_capacity: WattHours
     current_power: Watts # Positive when charging, negative when discharging
@@ -20,6 +22,7 @@ class BatteryState(ValueObject):
 
 @dataclass(frozen=True)
 class EnergyStateSnapshot(ValueObject):
+    """Value Object for an energy state snapshot."""
     production: Watts
     consumption: Watts # Load excluding miner
     battery: Optional[BatteryState]

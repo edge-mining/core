@@ -6,6 +6,7 @@ from typing import Optional
 from edge_mining.domain.forecast.value_objects import ForecastData
 
 class ForecastProviderPort(ABC):
+    """Port for the Forecast Provider."""
     @abstractmethod
     def get_solar_forecast(self) -> Optional[ForecastData]:
         """Fetches the solar energy production forecast."""

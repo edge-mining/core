@@ -5,12 +5,14 @@ from typing import Optional
 import random
 
 from edge_mining.domain.energy.ports import EnergyMonitorPort
+from edge_mining.domain.energy.common import EnergyMonitorAdapter
 from edge_mining.domain.common import Watts, Percentage, WattHours
 from edge_mining.domain.energy.value_objects import EnergyStateSnapshot, BatteryState
 
 class DummyEnergyMonitor(EnergyMonitorPort):
     """Generates plausible fake energy data."""
     def __init__(self, has_battery: bool = True, battery_capacity_wh: float = 10000):
+        super().__init__(energy_monitor_type=EnergyMonitorAdapter.DUMMY)
         self.has_battery = has_battery
         self.battery_capacity = WattHours(battery_capacity_wh)
         self.current_soc = Percentage(random.uniform(40.0, 90.0)) # Start with random SOC
@@ -49,7 +51,7 @@ class DummyEnergyMonitor(EnergyMonitorPort):
                 battery_power = -discharge_power
                 grid_power = net_power - battery_power # Import remaining deficit
             else: # Idle or full/empty
-                 grid_power = net_power # Import/export directly
+                grid_power = net_power # Import/export directly
 
             battery_state = BatteryState(
                 state_of_charge=Percentage(self.current_soc),

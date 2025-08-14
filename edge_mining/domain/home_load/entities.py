@@ -7,6 +7,7 @@ from edge_mining.domain.common import EntityId
 
 @dataclass
 class LoadDevice:
+    """Entity for a load device."""
     id: EntityId = field(default_factory=uuid.uuid4)
     name: str = "" # e.g., "Dishwasher", "EV Charger"
     type: str = "" # e.g., "Appliance", "Heating"

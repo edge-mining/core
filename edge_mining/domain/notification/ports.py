@@ -5,7 +5,8 @@
 from abc import ABC, abstractmethod
 
 class NotificationPort(ABC):
+    """Port for the Notification."""
     @abstractmethod
-    def send_notification(self, title: str, message: str) -> bool:
+    async def send_notification(self, title: str, message: str) -> bool:
         """Sends a notification to the configured channel(s)."""
         raise NotImplementedError

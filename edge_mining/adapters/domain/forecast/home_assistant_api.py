@@ -37,7 +37,7 @@ class HomeAssistantForecastProvider(ForecastProviderPort):
         unit_solar_forecast_energy_remaining_today: str = "kWh",
         logger: LoggerPort = None
     ):
-         # Initialize the HomeAssistant API Service
+        # Initialize the HomeAssistant API Service
         self.home_assistant = home_assistant
         self.logger = logger
 
@@ -71,7 +71,7 @@ class HomeAssistantForecastProvider(ForecastProviderPort):
         self.logger.debug(f"Units Configured for Energy:"
                     f"Actual='{unit_solar_forecast_energy_actual_h}', Next 1h='{unit_solar_forecast_energy_next_1h}', "
                     f"Next 24h='{unit_solar_forecast_energy_next_24h}', Remaining='{unit_solar_forecast_energy_remaining_today}'")
-    
+
     def get_solar_forecast(self) -> Optional[ForecastData]:
         """Fetches the solar energy production forecast."""
         self.logger.debug("Fetching solar forecast energy state from Home Assistant...")
@@ -102,18 +102,18 @@ class HomeAssistantForecastProvider(ForecastProviderPort):
         if energy_next_24h is None and self.entity_solar_forecast_energy_next_24h:
             self.logger.error(f"Missing critical value: Solar Production (Entity: {self.entity_solar_forecast_energy_next_24h})")
             has_critical_error = True
-        
+
         # Add here other checks for critical values as needed
-        
+
         if has_critical_error:
             self.logger.error("Failed to retrieve one or more critical energy values from Home Assistant. Cannot create forecast data.")
             return None
 
         now = datetime.now()
-        
+
         # Add power data
         power_predictions: Dict[Timestamp, Watts] = {}
-        
+
         if power_actual_h is not None:
             power_predictions[(now, now + timedelta(hours=0))] = power_actual_h
         if power_next_1h is not None:
@@ -125,16 +125,16 @@ class HomeAssistantForecastProvider(ForecastProviderPort):
 
         # Add energy data
         energy_predictions: Dict[Tuple[Timestamp, Timestamp], WattHours] = {}
-        
+
         if energy_actual_h is not None:
             energy_predictions[(now, now + timedelta(hours=0))] = energy_actual_h
         if energy_next_1h is not None:
             energy_predictions[(now, now + timedelta(hours=1))] = energy_next_1h
         if energy_remaining_today is not None:
             energy_predictions[(now, now + timedelta(hours=24))] = energy_remaining_today
-        
+
         energy_predictions[(now, now + timedelta(hours=24))] = energy_next_24h
-        
+
         forecast = ForecastData(
             predicted_energy=energy_predictions,
             predicted_power=power_predictions,
@@ -143,5 +143,5 @@ class HomeAssistantForecastProvider(ForecastProviderPort):
 
         self.logger.info(f"HA Monitor: Forecast Power State fetched: {forecast.predicted_power}")
         self.logger.info(f"HA Monitor: Forecast Energy State fetched: {forecast.predicted_energy}")
-        
+
         return forecast

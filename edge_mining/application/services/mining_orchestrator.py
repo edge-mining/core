@@ -166,5 +166,5 @@ class MiningOrchestratorService:
                 self.logger.debug(f"Miner {miner_id}: Maintaining current state ({current_status.name}).")
 
         else:
-             if self.logger:
+            if self.logger:
                 self.logger.warning(f"Unhandled decision '{decision.name}' for miner {miner_id}")

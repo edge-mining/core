@@ -40,10 +40,10 @@ async def get_policies_list(
                     is_active=policy.is_active
                 )
             )
-        
+
         return response
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 @router.get("/policies/active", response_model=OptimizationPolicyResponseSchema)
 async def get_active_policy(
@@ -65,7 +65,7 @@ async def get_active_policy(
 
         return response
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 @router.get("/policies/{policy_id}", response_model=OptimizationPolicyResponseSchema)
 async def get_policy_details(
@@ -87,10 +87,10 @@ async def get_policy_details(
         )
 
         return response
-    except PolicyNotFoundError: # Catch specific domain errors if needed
-         raise HTTPException(status_code=404, detail="Policy not found")
+    except PolicyNotFoundError as e: # Catch specific domain errors if needed
+        raise HTTPException(status_code=404, detail="Policy not found") from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 @router.post("/policies", response_model=OptimizationPolicyResponseSchema)
 async def add_policy(
@@ -115,7 +115,7 @@ async def add_policy(
 
         return response
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 @router.post("/policies/{policy_id}/rules", response_model=AutomationRuleCreateSchema)
 async def add_rule_to_policy(
@@ -147,10 +147,10 @@ async def add_rule_to_policy(
         )
 
         return response
-    except PolicyNotFoundError:
-         raise HTTPException(status_code=404, detail="Policy not found")
+    except PolicyNotFoundError as e:
+        raise HTTPException(status_code=404, detail="Policy not found") from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 @router.get("/policies/{policy_id}/rules/type/{rule_type}", response_model=List[AutomationRuleResponseSchema])
 async def get_policy_rules(
@@ -164,7 +164,7 @@ async def get_policy_rules(
             rule_type = RuleType.START
         elif rule_type == RuleTypeSchema.stop:
             rule_type = RuleType.STOP
-        
+
         rules: List[AutomationRule] = config_service.get_policy_rules(policy_id, rule_type)
 
         response: List[AutomationRuleResponseSchema] = []
@@ -179,10 +179,10 @@ async def get_policy_rules(
             )
 
         return response
-    except PolicyNotFoundError:
-         raise HTTPException(status_code=404, detail="Policy not found")
+    except PolicyNotFoundError as e:
+        raise HTTPException(status_code=404, detail="Policy not found") from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 @router.get("/policies/{policy_id}/rules/{rule_id}", response_model=AutomationRuleResponseSchema)
 async def get_policy_rule(
@@ -193,20 +193,20 @@ async def get_policy_rule(
     """Get a specific rule for a specific optimization policy."""
     try:
         rule: AutomationRule = config_service.get_policy_rule(policy_id, rule_id)
-        
+
         if rule is None:
             raise HTTPException(status_code=404, detail="Rule not found")
-        
+
         response = AutomationRuleResponseSchema(
             id=str(rule.id),
             name=rule.name,
             conditions=rule.conditions,
             action=rule.action
         )
-        
+
         return response
-    except PolicyNotFoundError:
-         raise HTTPException(status_code=404, detail="Policy not found")
+    except PolicyNotFoundError as e:
+        raise HTTPException(status_code=404, detail="Policy not found") from e
 
 @router.put("/policies/{policy_id}/rules/{rule_id}", response_model=AutomationRuleResponseSchema)
 async def update_policy_rule(
@@ -233,10 +233,10 @@ async def update_policy_rule(
         )
 
         return response
-    except PolicyNotFoundError:
-         raise HTTPException(status_code=404, detail="Policy not found")
+    except PolicyNotFoundError as e:
+        raise HTTPException(status_code=404, detail="Policy not found") from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 @router.delete("/policies/{policy_id}/rules/{rule_id}")
 async def delete_policy_rule(
@@ -248,10 +248,10 @@ async def delete_policy_rule(
     try:
         config_service.delete_policy_rule(policy_id, rule_id)
         return {"detail": "Rule deleted successfully"}
-    except PolicyNotFoundError:
-         raise HTTPException(status_code=404, detail="Policy not found")
+    except PolicyNotFoundError as e:
+        raise HTTPException(status_code=404, detail="Policy not found") from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 @router.put("/policies/{policy_id}/activate")
 async def set_active_policy(
@@ -262,31 +262,10 @@ async def set_active_policy(
     try:
         config_service.set_active_policy(policy_id)
         return {"detail": "Policy activated successfully"}
-    except PolicyNotFoundError:
-         raise HTTPException(status_code=404, detail="Policy not found")
+    except PolicyNotFoundError as e:
+        raise HTTPException(status_code=404, detail="Policy not found") from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.get("/policies/active", response_model=OptimizationPolicyResponseSchema)
-async def get_active_policy(
-    config_service: Annotated[ConfigurationService, Depends(get_config_service)]
-):
-    """Get the currently active optimization policy."""
-    try:
-        active_policy = config_service.get_active_policy()
-        if active_policy is None:
-            raise HTTPException(status_code=404, detail="No active policy found")
-
-        response = OptimizationPolicyResponseSchema(
-            id=str(active_policy.id),
-            name=active_policy.name,
-            description=active_policy.description,
-            is_active=active_policy.is_active
-        )
-
-        return response
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 @router.delete("/policies/{policy_id}")
 async def delete_policy(
@@ -298,8 +277,8 @@ async def delete_policy(
         deleted_policy = config_service.delete_policy(policy_id)
 
         return {"detail": f"Policy '{deleted_policy.name}' deleted successfully"}
-    except PolicyNotFoundError:
-         raise HTTPException(status_code=404, detail="Policy not found")
+    except PolicyNotFoundError as e:
+        raise HTTPException(status_code=404, detail="Policy not found") from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 

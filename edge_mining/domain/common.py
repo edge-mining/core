@@ -1,7 +1,6 @@
 """Collection of Common Objects for the Edge Mining application domain."""
 
 from dataclasses import dataclass
-from enum import Enum
 from typing import NewType
 from datetime import datetime
 import uuid
@@ -15,4 +14,5 @@ EntityId = NewType("EntityId", uuid.UUID)
 
 @dataclass(frozen=True)
 class ValueObject:
+    """Base class for value objects."""
     pass # Base class for value objects if needed

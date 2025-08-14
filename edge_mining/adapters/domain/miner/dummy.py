@@ -1,6 +1,5 @@
 """Dummy adapter (Implementation of Port) that simulates a miner control for Edge Mining Application"""
 
-from datetime import datetime
 from typing import Optional, Dict
 import random
 
@@ -11,15 +10,21 @@ from edge_mining.domain.miner.value_objects import HashRate
 
 class DummyMinerController(MinerControlPort):
     """Simulates miner control without real hardware."""
-    def __init__(self, initial_status: Optional[Dict[MinerId, MinerStatus]] = None, power_w: float = 1500.0):
+    def __init__(
+        self,
+        initial_status: Optional[Dict[MinerId, MinerStatus]] = None,
+        power_w: float = 1500.0
+    ):
         self._status: Dict[MinerId, MinerStatus] = initial_status if initial_status else {}
         self._power = Watts(power_w)
 
     def _ensure_miner(self, miner_id: MinerId):
+        """Ensure the miner is in the status dictionary."""
         if miner_id not in self._status:
             self._status[miner_id] = MinerStatus.UNKNOWN # Default if never seen
 
     def start_miner(self, miner_id: MinerId) -> bool:
+        """Start the miner."""
         self._ensure_miner(miner_id)
         print(f"DummyController: Received START for {miner_id} (current: {self._status[miner_id].name})")
         if self._status[miner_id] != MinerStatus.ON:
@@ -33,6 +38,7 @@ class DummyMinerController(MinerControlPort):
         return True # Assume command sent successfully
 
     def stop_miner(self, miner_id: MinerId) -> bool:
+        """Stop the miner."""
         self._ensure_miner(miner_id)
         print(f"DummyController: Received STOP for {miner_id} (current: {self._status[miner_id].name})")
         if self._status[miner_id] == MinerStatus.ON:
@@ -43,6 +49,7 @@ class DummyMinerController(MinerControlPort):
         return True # Assume command sent successfully
 
     def get_miner_status(self, miner_id: MinerId) -> MinerStatus:
+        """Get the status of the miner."""
         self._ensure_miner(miner_id)
         # Simulate state transitions finishing for dummy purposes
         if self._status[miner_id] == MinerStatus.STARTING:
@@ -53,17 +60,18 @@ class DummyMinerController(MinerControlPort):
                 print(f"DummyController: Simulating {miner_id} still STARTING")
 
         elif self._status[miner_id] == MinerStatus.STOPPING:
-             if random.random() < 0.9: # 90% chance it finished stopping
-                print(f"DummyController: Simulating {miner_id} finished stopping -> OFF")
-                self._status[miner_id] = MinerStatus.OFF
-             else:
-                print(f"DummyController: Simulating {miner_id} still STOPPING")
+            if random.random() < 0.9: # 90% chance it finished stopping
+               print(f"DummyController: Simulating {miner_id} finished stopping -> OFF")
+               self._status[miner_id] = MinerStatus.OFF
+            else:
+               print(f"DummyController: Simulating {miner_id} still STOPPING")
 
         status = self._status.get(miner_id, MinerStatus.UNKNOWN)
         print(f"DummyController: Reporting status {status.name} for {miner_id}")
         return status
 
     def get_miner_power(self, miner_id: MinerId) -> Optional[Watts]:
+        """Get the power of the miner."""
         self._ensure_miner(miner_id)
         status = self._status.get(miner_id)
         if status == MinerStatus.ON:
@@ -77,8 +85,9 @@ class DummyMinerController(MinerControlPort):
         else:
             print(f"DummyController: Reporting power 0W for {miner_id} (status: {status.name})")
             return Watts(0.0)
-    
+
     def get_miner_hashrate(self, miner_id: MinerId) -> Optional[HashRate]:
+        """Get the hash rate of the miner."""
         self._ensure_miner(miner_id)
         status = self._status.get(miner_id)
         if status == MinerStatus.ON:

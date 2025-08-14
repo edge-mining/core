@@ -7,6 +7,7 @@ from edge_mining.domain.common import Watts
 from edge_mining.domain.home_load.aggregate_roots import HomeLoadsProfile
 
 class HomeForecastProviderPort(ABC):
+    """Port for the Home Forecast Provider."""
     @abstractmethod
     def get_home_consumption_forecast(self, hours_ahead: int = 24) -> Optional[Watts]:
         """
@@ -18,10 +19,13 @@ class HomeForecastProviderPort(ABC):
         raise NotImplementedError
 
 class HomeLoadsProfileRepository(ABC):
+    """Port for the Home Loads Profile Repository."""
     @abstractmethod
     def get_profile(self) -> Optional[HomeLoadsProfile]: # Assuming single profile for now
+        """Get the home loads profile."""
         raise NotImplementedError
 
     @abstractmethod
     def save_profile(self, profile: HomeLoadsProfile) -> None:
+        """Save the home loads profile."""
         raise NotImplementedError

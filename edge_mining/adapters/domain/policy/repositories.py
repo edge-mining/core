@@ -16,12 +16,13 @@ from edge_mining.adapters.infrastructure.persistence.sqlite import BaseSqliteRep
 # Simple In-Memory implementation for testing and basic use
 
 class InMemoryOptimizationPolicyRepository(OptimizationPolicyRepository):
+    """In-Memory implementation of the OptimizationPolicyRepository."""
     def __init__(self, initial_policies: Optional[Dict[EntityId, OptimizationPolicy]] = None):
         self._policies: Dict[EntityId, OptimizationPolicy] = copy.deepcopy(initial_policies) if initial_policies else {}
 
     def add(self, policy: OptimizationPolicy) -> None:
         if policy.id in self._policies:
-             print(f"Warning: Policy {policy.id} already exists, overwriting.")
+            print(f"Warning: Policy {policy.id} already exists, overwriting.")
         self._policies[policy.id] = copy.deepcopy(policy)
 
     def get_by_id(self, policy_id: EntityId) -> Optional[OptimizationPolicy]:
@@ -46,7 +47,13 @@ class InMemoryOptimizationPolicyRepository(OptimizationPolicyRepository):
                     p.is_active = False # Deactivate others
         self._policies[policy.id] = copy.deepcopy(policy)
 
+    def remove(self, policy_id: EntityId) -> None:
+        if policy_id not in self._policies:
+            raise ValueError(f"Policy {policy_id} not found for removal.")
+        del self._policies[policy_id]
+
 class SqliteOptimizationPolicyRepository(BaseSqliteRepository, OptimizationPolicyRepository):
+    """SQLite implementation of the OptimizationPolicyRepository."""
 
     def _dict_to_rule(self, data: Dict[str, Any]) -> AutomationRule:
         # Deserialize a dictionary (from JSON) into an AutomationRule object
@@ -122,7 +129,8 @@ class SqliteOptimizationPolicyRepository(BaseSqliteRepository, OptimizationPolic
             self.logger.error(f"SQLite error adding policy '{policy.name}': {e}")
             raise PolicyError(f"DB error adding policy: {e}") from e
         finally:
-            if conn: conn.close()
+            if conn:
+                conn.close()
 
     def get_by_id(self, policy_id: EntityId) -> Optional[OptimizationPolicy]:
         self.logger.debug(f"Getting policy {policy_id} from SQLite.")
@@ -137,7 +145,8 @@ class SqliteOptimizationPolicyRepository(BaseSqliteRepository, OptimizationPolic
             self.logger.error(f"SQLite error getting policy {policy_id}: {e}")
             return None
         finally:
-            if conn: conn.close()
+            if conn:
+                conn.close()
 
     def get_active_policy(self) -> Optional[OptimizationPolicy]:
         self.logger.debug("Getting active policy from SQLite.")
@@ -152,7 +161,8 @@ class SqliteOptimizationPolicyRepository(BaseSqliteRepository, OptimizationPolic
             self.logger.error(f"SQLite error getting active policy: {e}")
             return None
         finally:
-            if conn: conn.close()
+            if conn:
+                conn.close()
 
     def get_all(self) -> List[OptimizationPolicy]:
         self.logger.debug("Getting all policies from SQLite.")
@@ -172,7 +182,8 @@ class SqliteOptimizationPolicyRepository(BaseSqliteRepository, OptimizationPolic
             self.logger.error(f"SQLite error getting all policies: {e}")
             return []
         finally:
-            if conn: conn.close()
+            if conn:
+                conn.close()
 
     def update(self, policy: OptimizationPolicy) -> None:
         self.logger.debug(f"Updating policy '{policy.name}' ({policy.id}) in SQLite.")
@@ -216,8 +227,9 @@ class SqliteOptimizationPolicyRepository(BaseSqliteRepository, OptimizationPolic
             self.logger.error(f"SQLite error updating policy '{policy.name}': {e}")
             raise PolicyError(f"EDB error updating policy: {e}") from e
         finally:
-            if conn: conn.close()
-    
+            if conn:
+                conn.close()
+
     def remove(self, policy_id: EntityId) -> None:
         self.logger.debug(f"Removing policy {policy_id} from SQLite.")
         sql = "DELETE FROM policies WHERE id = ?"
@@ -232,4 +244,5 @@ class SqliteOptimizationPolicyRepository(BaseSqliteRepository, OptimizationPolic
             self.logger.error(f"SQLite error removing policy {policy_id}: {e}")
             raise PolicyError(f"DB error removing policy: {e}") from e
         finally:
-            if conn: conn.close()
+            if conn:
+                conn.close()

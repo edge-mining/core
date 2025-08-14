@@ -8,6 +8,7 @@ from edge_mining.domain.common import Watts, Timestamp, ValueObject
 
 @dataclass(frozen=True)
 class ConsumptionForecast(ValueObject):
+    """Value Object for a consumption forecast."""
     # Predicted consumption for a future period
     predicted_watts: Dict[Timestamp, Watts] = field(default_factory=dict)
     generated_at: Timestamp = field(default_factory=datetime.now)
