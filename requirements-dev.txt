@@ -1,0 +1,17 @@
+# Development Dependencies
+# Testing
+pytest==8.3.3
+pytest-cov==6.0.0
+pytest-asyncio==0.25.0
+pytest-mock==3.14.0
+
+# Code Quality and Linting
+ruff==0.12.9
+mypy==1.13.0
+bandit==1.8.0
+
+# Pre-commit hooks
+pre-commit==4.0.1
+
+# Type checking stubs
+types-PyYAML==6.0.12.20240917

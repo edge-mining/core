@@ -2,4 +2,4 @@
 
 from typing import NewType
 
-UserId = NewType("UserId", str) # Or use UUID
+UserId = NewType("UserId", str)  # Or use UUID

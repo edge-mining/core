@@ -1,0 +1,65 @@
+rules:
+  - name: "Low Battery Stop"
+    description: "Stop mining when battery is low"
+    conditions:
+      any_of:
+        - field: "energy_state.battery.state_of_charge"
+          operator: "lt"
+          value: 20
+        - field: "energy_state.battery.remaining_capacity"
+          operator: "lt"
+          value: 2000  # WattHours
+    priority: 100  # Highest priority for safety
+    enabled: true
+
+  - name: "Grid Import Limit"
+    description: "Stop mining when importing too much from grid"
+    conditions:
+      all_of:
+        - field: "energy_state.grid.importing_power"
+          operator: "gt"
+          value: 200  # Importing more than 200W
+    priority: 20
+    enabled: true
+
+  - name: "High Home Consumption"
+    description: "Stop mining when home load is high and battery is not full"
+    conditions:
+      all_of:
+        - field: "home_load_forecast"
+          operator: "gt"
+          value: 2500
+        - field: "energy_state.battery.state_of_charge"
+          operator: "lt"
+          value: 80
+        - field: "timestamp.hour"
+          operator: "in"
+          value: [17, 18, 19, 20, 21]  # Evening hours
+    priority: 20
+    enabled: true
+
+  - name: "Maintenance Window"
+    description: "Stop mining during maintenance hours"
+    conditions:
+      any_of:
+        - field: "timestamp.hour"
+          operator: "eq"
+          value: 3  # 3 AM maintenance window
+        - field: "miner.status"
+          operator: "eq"
+          value: "ERROR"
+    priority: 20
+    enabled: true
+
+  - name: "Quiet Window"
+    description: "Stop mining during quiet hours"
+    conditions:
+      any_of:
+        - field: "timestamp.hour"
+          operator: "in"
+          value: [6, 7, 8]  # Early morning
+        - field: "miner.status"
+          operator: "eq"
+          value: "ERROR"
+    priority: 20
+    enabled: true

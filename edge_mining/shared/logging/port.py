@@ -2,7 +2,10 @@
 
 from abc import ABC, abstractmethod
 
+
 class LoggerPort(ABC):
+    """Port for the Logger."""
+
     @abstractmethod
     def show_log_level(self, record):
         """Allows to show stuff in the log based on the global setting."""
@@ -52,7 +55,7 @@ class LoggerPort(ABC):
     def shutdown(self):
         """Sure that log are written to the file before exiting."""
         raise NotImplementedError
-    
+
     @abstractmethod
     def log_examples(self):
         """Log examples for the log engine."""

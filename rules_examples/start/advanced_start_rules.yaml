@@ -1,0 +1,76 @@
+rules:
+  - name: "Smart Weekend Mining (On-Grid)"
+    description: "Weekend mining with intelligent conditions for on-grid systems"
+    conditions:
+      all_of:
+        - field: "timestamp.weekday"
+          operator: "in"
+          value: [5, 6]  # Saturday, Sunday
+        - any_of:
+            - all_of:  # Scenario 1: High solar + good battery
+                - field: "forecast.avg_next_4_hours_power"
+                  operator: "gt"
+                  value: 2000
+                - field: "energy_state.battery.state_of_charge"
+                  operator: "gt"
+                  value: 70
+            - all_of:  # Scenario 2: Exporting to grid
+                - field: "energy_state.grid.exporting_power"
+                  operator: "lt"
+                  value: 800  # Exporting at least 800W
+                - field: "energy_state.battery.state_of_charge"
+                  operator: "gt"
+                  value: 50
+        - not_:  # Not during maintenance hours
+            field: "timestamp.hour"
+            operator: "in"
+            value: [2, 3, 4]  # Early morning maintenance
+    priority: 15
+    enabled: true
+
+  - name: "Off-Peak Hours Mining"
+    description: "Mining during off-peak electricity hours with good conditions"
+    conditions:
+      all_of:
+        - field: "timestamp.hour"
+          operator: "in"
+          value: [10, 11, 12, 13, 14, 15]  # Peak solar hours
+        - field: "energy_state.battery.state_of_charge"
+          operator: "gt"
+          value: 60
+        - field: "home_load_forecast"
+          operator: "lt"
+          value: 2000  # Low expected home consumption
+        - any_of:
+            - field: "energy_state.production"
+              operator: "gt"
+              value: 2500
+            - field: "energy_state.grid.exporting_power"
+              operator: "lt"
+              value: 300  # Some export
+    priority: 10
+    enabled: true
+
+  - name: "Economic Opportunity Mining"
+    description: "Start mining when economic conditions are favorable"
+    conditions:
+      all_of:
+        - field: "energy_state.battery.state_of_charge"
+          operator: "gte"
+          value: 85  # High battery
+        - field: "energy_state.production"
+          operator: "gt"
+          value: 1800
+        - any_of:
+            - field: "timestamp.weekday"
+              operator: "in"
+              value: [5, 6]  # Weekends
+            - all_of:  # Or weekday off-peak
+                - field: "timestamp.weekday"
+                  operator: "in"
+                  value: [0, 1, 2, 3, 4]
+                - field: "timestamp.hour"
+                  operator: "in"
+                  value: [11, 12, 13, 14]
+    priority: 5
+    enabled: true

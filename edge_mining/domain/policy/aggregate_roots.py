@@ -1,63 +1,78 @@
-"""Collection of Aggregate Roots for the Energy Optimization domain of the Edge Mining application."""
+"""
+Collection of Aggregate Roots for the Energy Optimization domain
+of the Edge Mining application.
+"""
 
 from dataclasses import dataclass, field
 from typing import List, Optional
-import uuid
 
-from edge_mining.domain.common import EntityId, Watts
+from edge_mining.domain.common import AggregateRoot
+from edge_mining.domain.miner.common import MinerStatus
 from edge_mining.domain.policy.common import MiningDecision
 from edge_mining.domain.policy.entities import AutomationRule
-from edge_mining.domain.miner.common import MinerStatus, MinerId
-from edge_mining.domain.miner.value_objects import HashRate
-from edge_mining.domain.forecast.value_objects import ForecastData
-from edge_mining.domain.energy.value_objects import EnergyStateSnapshot
+from edge_mining.domain.policy.services import RuleEngine
+from edge_mining.domain.policy.value_objects import DecisionalContext
+
 
 @dataclass
-class OptimizationPolicy:
-    id: EntityId = field(default_factory=uuid.uuid4)
+class OptimizationPolicy(AggregateRoot):
+    """Aggregate Root for the Optimization Policy."""
+
     name: str = ""
     description: Optional[str] = None
-    is_active: bool = False
-    # Could have different types of rules or grouped rules, but for now I have to make it simple! 🙃​
+
     start_rules: List[AutomationRule] = field(default_factory=list)
     stop_rules: List[AutomationRule] = field(default_factory=list)
-    target_miner_ids: List[MinerId] = field(default_factory=list) # Which miners this policy applies to, needed if we have multiple miners.
 
-    def decide_next_action(
-        self,
-        energy_state: EnergyStateSnapshot,
-        forecast: Optional[ForecastData],
-        home_load_forecast: Optional[Watts], # Added home load forecast
-        current_miner_status: MinerStatus,
-        hash_rate: Optional[HashRate],
-        current_miner_power: Optional[Watts],
-    ) -> MiningDecision:
+    def sort_rules(self) -> None:
+        """Sort rules by priority."""
+        self.start_rules.sort(key=lambda r: r.priority, reverse=True)
+        self.stop_rules.sort(key=lambda r: r.priority, reverse=True)
+
+    def decide_next_action(self, decisional_context: DecisionalContext, rule_engine: RuleEngine) -> MiningDecision:
         """
         Applies the policy rules to determine the next action.
         This is the core decision-making logic.
         """
-        print(f"Policy '{self.name}': Evaluating state for miner status {current_miner_status.name}")
+
+        if not decisional_context.miner:
+            raise ValueError("Error while evaluating policy: Miner is not set in the context.")
+
+        print(f"Policy '{self.name}': Evaluating state for miner status {decisional_context.miner.status.name}")
 
         # Logic:
         # 1. If miner is OFF, check START rules. If any match -> START_MINING
         # 2. If miner is ON, check STOP rules. If any match -> STOP_MINING
         # 3. Otherwise -> MAINTAIN_STATE
-        
-        # This is the location where the magic happens! 🪄​🎩
 
-        if current_miner_status in [MinerStatus.OFF, MinerStatus.ERROR, MinerStatus.UNKNOWN]:
-            for rule in self.start_rules:
-                if rule.evaluate(energy_state, forecast, home_load_forecast, current_miner_status):
-                    print(f"Policy '{self.name}': Start condition met by rule '{rule.name}'.")
-                    return MiningDecision.START_MINING
-            return MiningDecision.MAINTAIN_STATE # Stay off if no start rule matches
+        # This is the location where the magic happens!
 
-        elif current_miner_status == MinerStatus.ON:
-            for rule in self.stop_rules:
-                if rule.evaluate(energy_state, forecast, home_load_forecast, current_miner_status):
-                    print(f"Policy '{self.name}': Stop condition met by rule '{rule.name}'.")
-                    return MiningDecision.STOP_MINING
-            return MiningDecision.MAINTAIN_STATE # Stay on if no stop rule matches
+        # Sort the rules by priority before evaluation
+        self.sort_rules()
 
-        # For STARTING/STOPPING states, usually maintain state until confirmed ON/OFF
+        # Load rules into the rule engine based on miner status
+        if decisional_context.miner.status in [
+            MinerStatus.OFF,
+            MinerStatus.ERROR,
+            MinerStatus.UNKNOWN,
+        ]:
+            rule_engine.load_rules(self.start_rules)
+
+            # Evaluate the rules in the rule engine
+            if rule_engine.evaluate(decisional_context):
+                # If any START rule matches, return START_MINING decision
+                return MiningDecision.START_MINING
+        elif decisional_context.miner.status in [MinerStatus.ON]:
+            rule_engine.load_rules(self.stop_rules)
+
+            # Evaluate the rules in the rule engine
+            if rule_engine.evaluate(decisional_context):
+                # If any STOP rule matches, return STOP_MINING decision
+                return MiningDecision.STOP_MINING
+        else:
+            # For STARTING/STOPPING states, usually maintain state until confirmed
+            # ON/OFF
+            return MiningDecision.MAINTAIN_STATE
+
+        # If no rules matched, maintain the current state
         return MiningDecision.MAINTAIN_STATE

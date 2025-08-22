@@ -41,12 +41,7 @@ The project uses **Hexagonal Architecture (Ports and Adapters)** to clearly sepa
     pip install -r requirements.txt
     ```
 4.  **Configure environment variables:**
-    Copy `.env.example` to `.env` and change the values ​​according to your configuration (API keys, select the desired adapters).
-    **Note:** If you use the `home_assistant_api` adapter for energy monitoring and forecast provider, make sure to configure the following correctly:
-    - `HOME_ASSISTANT_URL` and `HOME_ASSISTANT_TOKEN`.
-    - The `HA_ENTITY_*` IDs corresponding to your sensors in Home Assistant.
-    - **Important:** The `HA_ENTITY_HOUSE_CONSUMPTION` entity should represent the house consumption *excluding* the miner load. You may need to create a `template sensor` in Home Assistant for this.
-    - Check the units (`HA_UNIT_*`) and conventions (`HA_GRID_POSITIVE_EXPORT`, `HA_BATTERY_POSITIVE_CHARGE`) of your sensors.
+    Copy `.env.example` to `.env` and change the values ​​according to your configuration (log level, timezone and geographical position).
     ```bash
     cp .env.example .env
     nano .env # Change the file .env
@@ -62,30 +57,34 @@ python -m edge_mining
 # Or by explicitly specifying
 python -m edge_mining standard
 ```
-2. **CLI Mode:** Access the command line interface to manage miners, policies, etc.
+2. **CLI Mode:** Access the command line interface with an interactive menu to manage miners, energy sources, controller, policies, etc.
+```bash
+python -m edge_mining cli interactive
+
+```
+You can use the `--help` flag to see all available options:
 ```bash
 python -m edge_mining cli --help
-python -m edge_mining cli miner list
-# ...other CLI commands
 ```
-The API will be available at `http://localhost:8001` (or the configured address and port). You can access the interactive documentation (Swagger UI) at `http://localhost:8001/docs`.
+
+The API will be available at `http://localhost:8001` (or the configured port). You can access the interactive documentation (Swagger UI) at `http://localhost:8001/docs`.
 
 ### Available adapters
 
 - **Energy Monitor:** `dummy`, `home_assistant` (*new*)
 - **Miner Controller:** `dummy`
 - **Forecast Provider:** `dummy`, `home_assistant` (*new*)
-- **Persistence:** `in_memory`, `sqlite` (*new*)
+- **Persistence:** `in_memory`, `sqlite`, `YAML` (*new*)
 - **Notification:** `dummy`, `telegram` (*new*)
 - **Interaction:** `cli`, `api`(*new*)
 
 ## TODO
 
-- Implement real adapters for specific scenarios (HomeAssistant MQTT, specific ASIC APIs).
-- Implement real adapters for external APIs (Solcast, OpenWeatherMap, Mining Pools).
-- Add unit, integration and acceptance tests.
-- Improve error handling and logging.
-- Develop a web UI (could be a separate driving adapter using the API, maybe in a different repository).
-- Implement more sophisticated home load forecasting logic.
-- Handle authentication and authorization (especially for the API).
-- Improve the rules engine.
+- [ ] Implement real adapters for specific scenarios (HomeAssistant MQTT, specific ASIC APIs).
+- [ ] Implement real adapters for external APIs (Solcast, OpenWeatherMap, Mining Pools).
+- [ ] Add unit, integration and acceptance tests.
+- [ ] Improve error handling and logging.
+- [ ] Develop a web UI (could be a separate driving adapter using the API, maybe in a different repository).
+- [ ] Implement more sophisticated home load forecasting logic.
+- [ ] Handle authentication and authorization (especially for the API).
+- [x] Improve the rules engine.

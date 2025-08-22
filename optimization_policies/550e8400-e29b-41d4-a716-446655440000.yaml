@@ -1,0 +1,148 @@
+id: "550e8400-e29b-41d4-a716-446655440000"
+name: "Advanced Solar Mining Policy"
+description: "Comprehensive policy for solar-based mining optimization with intelligent start and stop conditions"
+
+start_rules:
+  - id: "550e8400-e29b-41d4-a716-446655440001"
+    name: "Priority Solar Mining"
+    description: "High priority: Start mining when solar production is very high"
+    conditions:
+      all_of:
+        - field: "energy_state.production"
+          operator: "gt"
+          value: 3000  # Very high solar production
+        - field: "energy_state.battery.state_of_charge"
+          operator: "gt"
+          value: 40   # Battery not too low
+    priority: 20
+    enabled: true
+
+  - id: "550e8400-e29b-41d4-a716-446655440002"
+    name: "Smart Weekend Mining"
+    description: "Weekend mining with intelligent conditions"
+    conditions:
+      all_of:
+        - field: "timestamp.weekday"
+          operator: "in"
+          value: [5, 6]  # Saturday, Sunday
+        - any_of:
+            - all_of:  # Scenario 1: High solar + good battery
+                - field: "forecast.avg_next_4_hours_power"
+                  operator: "gt"
+                  value: 2000
+                - field: "energy_state.battery.state_of_charge"
+                  operator: "gt"
+                  value: 70
+            - all_of:  # Scenario 2: Exporting to grid
+                - field: "energy_state.grid.exporting_power"
+                  operator: "lt"
+                  value: 800  # Exporting at least 800W
+                - field: "energy_state.battery.state_of_charge"
+                  operator: "gt"
+                  value: 50
+        - not_:  # Not during maintenance hours
+            field: "timestamp.hour"
+            operator: "in"
+            value: [2, 3, 4]  # Early morning maintenance
+    priority: 15
+    enabled: true
+
+  - id: "550e8400-e29b-41d4-a716-446655440003"
+    name: "Economic Opportunity Mining"
+    description: "Start mining when economic conditions are favorable"
+    conditions:
+      all_of:
+        - field: "energy_state.battery.state_of_charge"
+          operator: "gte"
+          value: 85  # High battery
+        - field: "energy_state.production"
+          operator: "gt"
+          value: 1800
+        - any_of:
+            - field: "timestamp.weekday"
+              operator: "in"
+              value: [5, 6]  # Weekends
+            - all_of:  # Or weekday off-peak
+                - field: "timestamp.weekday"
+                  operator: "in"
+                  value: [0, 1, 2, 3, 4]
+                - field: "timestamp.hour"
+                  operator: "in"
+                  value: [11, 12, 13, 14]
+    priority: 5
+    enabled: true
+
+stop_rules:
+  - id: "550e8400-e29b-41d4-a716-446655440004"
+    name: "Critical Battery Protection"
+    description: "CRITICAL: Stop mining immediately when battery is critically low"
+    conditions:
+      any_of:
+        - field: "energy_state.battery.state_of_charge"
+          operator: "lt"
+          value: 15  # Critical battery level
+        - field: "energy_state.battery.remaining_capacity"
+          operator: "lt"
+          value: 800  # Less than 800 WattHours remaining
+        - all_of:  # Battery discharging fast + low SOC
+            - field: "energy_state.battery.current_power"
+              operator: "lt"
+              value: -1000  # Discharging more than 1kW
+            - field: "energy_state.battery.state_of_charge"
+              operator: "lt"
+              value: 25
+    priority: 100  # Highest priority for safety
+    enabled: true
+
+  - id: "550e8400-e29b-41d4-a716-446655440005"
+    name: "Grid Import Limit Protection"
+    description: "Stop mining when importing too much from grid"
+    conditions:
+      all_of:
+        - field: "energy_state.grid.importing_power"
+          operator: "gt"
+          value: 2500  # Importing more than 2.5kW
+        - any_of:
+            - field: "forecast.next_hour_power"
+              operator: "lt"
+              value: 1000  # Low solar forecast
+            - field: "energy_state.battery.state_of_charge"
+              operator: "lt"
+              value: 60  # Battery not high enough
+        - not_:  # Not during emergency charging hours
+            all_of:
+              - field: "timestamp.hour"
+                operator: "in"
+                value: [1, 2, 3, 4, 5]  # Very early morning
+              - field: "energy_state.battery.state_of_charge"
+                operator: "lt"
+                value: 30
+    priority: 80
+    enabled: true
+
+  - id: "550e8400-e29b-41d4-a716-446655440006"
+    name: "Peak Home Consumption Stop"
+    description: "Stop mining during high home energy demand periods"
+    conditions:
+      all_of:
+        - field: "home_load_forecast"
+          operator: "gt"
+          value: 2800  # High predicted home consumption
+        - field: "timestamp.hour"
+          operator: "in"
+          value: [17, 18, 19, 20, 21, 22]  # Evening hours
+        - any_of:
+            - field: "energy_state.battery.state_of_charge"
+              operator: "lt"
+              value: 70
+            - field: "energy_state.production"
+              operator: "lt"
+              value: 1500  # Low current production
+    priority: 60
+    enabled: true
+
+metadata:
+  version: 2
+  author: "Edge Mining User"
+  created: "2025-08-04"
+  last_modified: "2025-08-04"

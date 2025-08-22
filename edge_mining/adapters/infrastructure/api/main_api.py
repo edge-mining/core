@@ -1,62 +1,55 @@
-from fastapi import FastAPI, Depends, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+"""Initializes the FastAPI application for the Edge Mining system."""
+
+from contextlib import asynccontextmanager
 from typing import Annotated
 
-from edge_mining.application.services.configuration_service import ConfigurationService
-from edge_mining.application.services.action_service import ActionService
-from edge_mining.application.services.mining_orchestrator import MiningOrchestratorService
-from edge_mining.shared.logging.port import LoggerPort
-
-# --- Placeholder for Dependency Injection with FastAPI ---
-# This is a common pattern using FastAPI's dependency injection system
-
-# Define functions that provide the initialized service instances
-# These would be created in __main__.py or a dedicated DI setup file
-
-def get_config_service():
-    # In a real app, this returns the already initialized instance
-    if _api_config_service is None:
-         raise RuntimeError("Config Service not initialized for API")
-    return _api_config_service
-
-def get_action_service():
-    if _api_action_service is None:
-         raise RuntimeError("Action Service not initialized for API")
-    return _api_action_service
-
-def get_orchestrator_service():
-    if _api_orchestrator_service is None:
-         raise RuntimeError("Orchestrator Service not initialized for API")
-    return _api_orchestrator_service
-
-# Global placeholders - Set these during app startup
-_api_config_service: ConfigurationService = None
-_api_action_service: ActionService = None
-_api_orchestrator_service: MiningOrchestratorService = None
-
-def set_api_services(
-        action_service: ActionService,
-        config_service: ConfigurationService,
-        orchestrator_service: MiningOrchestratorService,
-        logger: LoggerPort
-    ):
-    global _api_action_service, _api_config_service, _api_orchestrator_service, _logger
-
-    _api_action_service = action_service
-    _api_config_service = config_service
-    _api_orchestrator_service = orchestrator_service
-    _logger = logger
-
-# --- End Placeholder ---
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 # Import routers after DI setup functions are defined
-from edge_mining.adapters.domain.policy.fast_api.router import router as policy_router
 from edge_mining.adapters.domain.miner.fast_api.router import router as miner_router
+from edge_mining.adapters.domain.policy.fast_api.router import router as policy_router
+
+# Import dependency injection setup functions
+from edge_mining.adapters.infrastructure.api.setup import get_logger, get_optimization_service, get_service_container
+from edge_mining.application.services.optimization_service import OptimizationService
+from edge_mining.shared.logging.port import LoggerPort
+
+
+@asynccontextmanager
+async def app_lifespan(api_app: FastAPI):
+    """Application lifespan - startup and shutdown logic."""
+    # Startup
+    try:
+        container = await get_service_container()
+        if not container.is_initialized():
+            # This should not happen if properly initialized in main
+            raise RuntimeError("Services not initialized before FastAPI startup!")
+
+        container.logger.info("FastAPI application started successfully")
+
+        # We can add other startup logic here
+        # e.g., database connections, external service checks, etc.
+
+    except Exception as e:
+        print(f"Failed to start FastAPI application: {e}")
+        raise
+
+    yield  # Application is running
+
+    # Shutdown
+    try:
+        container.logger.info("FastAPI application shutting down...")
+        # Add cleanup logic here if needed
+    except Exception as e:
+        print(f"Error during shutdown: {e}")
+
 
 app = FastAPI(
     title="Edge Mining API",
     description="API for managing and monitoring the bitcoin mining energy optimization system.",
-    version="0.1.0"
+    version="0.1.0",
+    lifespan=app_lifespan,
 )
 
 # TODO: set only localhost origins
@@ -76,33 +69,27 @@ app.include_router(miner_router, prefix="/api/v1", tags=["mining"])
 app.include_router(policy_router, prefix="/api/v1", tags=["optimization_rules"])
 # Add more routers here (e.g., for configuration)
 
-@app.on_event("startup")
-async def startup_event():
-    # This is where we *should* initialize the services and adapters
-    # For this example, we assume they are set via set_api_services() beforehand
-    _logger.debug("FastAPI application startup...")
-    
-    if _api_config_service is None or _api_orchestrator_service is None:
-        _logger.error("API Services were not initialized before startup!")
 
 @app.get("/health", tags=["system"])
 async def health_check():
     """Basic health check endpoint."""
     return {"status": "ok"}
 
+
 # Example endpoint using dependency injection
 @app.post("/api/v1/evaluate", tags=["system"])
 async def trigger_evaluation(
-    orchestrator: Annotated[MiningOrchestratorService, Depends(get_orchestrator_service)] # Inject service
+    logger: Annotated[LoggerPort, Depends(get_logger)],  # Inject logger
+    optimization_service: Annotated[OptimizationService, Depends(get_optimization_service)],  # Inject service
 ):
-    """Manually trigger one evaluation cycle."""
-    _logger.info("API triggered evaluation cycle...")
+    """Manually run all enabled optimization units."""
+    logger.info("API run all enabled optimization units...")
     try:
-        orchestrator.evaluate_and_control_miners()
-        return {"message": "Evaluation cycle triggered successfully."}
+        await optimization_service.run_all_enabled_units()
+        return {"message": "All optimization units run successfully."}
     except Exception as e:
-        _logger.error("Error during API triggered evaluation:")
-        raise HTTPException(status_code=500, detail=f"Evaluation failed: {e}")
+        logger.error("Error during API run optimization units.")
+        raise HTTPException(status_code=500, detail=f"Evaluation failed: {e}") from e
 
 
 # --- To run this API (after setting up services): ---

@@ -1,0 +1,68 @@
+rules:
+  - name: "Priority Solar Mining"
+    description: "High priority: Start mining when solar production is very high"
+    conditions:
+      all_of:
+        - field: "energy_state.production"
+          operator: "gt"
+          value: 3000  # Very high solar production
+        - field: "energy_state.battery.state_of_charge"
+          operator: "gt"
+          value: 40   # Battery not too low
+    priority: 20
+    enabled: true
+
+  - name: "High Solar + Low Battery"
+    description: "Start mining when solar production is high and battery is not full"
+    conditions:
+      all_of:
+        - field: "forecast.next_hour_power"
+          operator: "gt"
+          value: 2000  # Watts
+        - field: "energy_state.battery.state_of_charge"
+          operator: "lt"
+          value: 90    # Percentage
+    priority: 20
+    enabled: true
+
+  - name: "Battery Full + Excess Solar (On-Grid)"
+    description: "Start mining when battery is full and energy is exported to the grid"
+    conditions:
+      all_of:
+        - field: "energy_state.battery.state_of_charge"
+          operator: "gte"
+          value: 95
+        - field: "energy_state.grid.exporting_power"
+          operator: "gt"
+          value: 500
+    priority: 20
+    enabled: true
+
+  - name: "Battery Full + Excess Solar (Off-Grid)"
+    description: "Start mining when battery is full and forecast predicts high solar production"
+    conditions:
+      all_of:
+        - field: "energy_state.battery.state_of_charge"
+          operator: "gte"
+          value: 95
+        - field: "forecast.next_hour_power"
+          operator: "gt"
+          value: 2000  # Watts
+    priority: 20
+    enabled: true
+
+  - name: "Weekend High Production"
+    description: "Start mining during weekends with good solar forecast"
+    conditions:
+      all_of:
+        - field: "timestamp.weekday"
+          operator: "in"
+          value: [5, 6]  # Saturday, Sunday
+        - field: "forecast.avg_next_4_hours_power"
+          operator: "gt"
+          value: 1500
+        - field: "energy_state.battery.state_of_charge"
+          operator: "gt"
+          value: 50
+    priority: 20
+    enabled: true

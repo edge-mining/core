@@ -1,39 +1,56 @@
 """Pydantic models for policy domain"""
 
-from typing import List, Optional
 from enum import Enum
+from typing import List, Optional
+
 from pydantic import BaseModel
 
-from edge_mining.domain.policy.common import MiningDecision
 
 class OptimizationPolicyCreateSchema(BaseModel):
+    """Schema for creating a new optimization policy"""
+
     name: str
     description: Optional[str] = None
     target_miner_ids: List[str]
 
+
 class OptimizationPolicyResponseSchema(BaseModel):
+    """Schema for returning an optimization policy"""
+
     id: str
     name: str
     description: Optional[str] = None
     target_miner_ids: List[str]
     is_active: bool
 
+
 class RuleTypeSchema(str, Enum):
-    start = "start"
-    stop = "stop"
+    """Schema for the type of rule"""
+
+    START = "start"
+    STOP = "stop"
+
 
 class MiningDecisionSchema(str, Enum):
-    start_mining = "start_mining"
-    stop_mining = "stop_mining"
-    maintain_state = "maintain_state"
+    """Schema for the mining decision"""
+
+    START_MINING = "start_mining"
+    STOP_MINING = "stop_mining"
+    MAINTAIN_STATE = "maintain_state"
+
 
 class AutomationRuleResponseSchema(BaseModel):
+    """Schema for returning an automation rule"""
+
     id: str
     name: str
-    conditions: dict # Define the structure of conditions if needed
-    action: MiningDecisionSchema # Use enum name
+    conditions: dict  # Define the structure of conditions if needed
+    action: Optional[MiningDecisionSchema] = None  # Optional, can be determined by policy
+
 
 class AutomationRuleCreateSchema(BaseModel):
+    """Schema for creating a new automation rule"""
+
     name: str
     conditions: dict
-    action: MiningDecisionSchema # Use enum name
+    action: Optional[MiningDecisionSchema] = None  # Optional, can be determined by policy

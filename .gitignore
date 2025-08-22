@@ -173,5 +173,13 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+# Development tools
+.mypy_cache/
+.bandit/
+.coverage.*
+htmlcov/
+.pytest_cache/
+*.log
+
 # Edge Mining stuffs
 edgemining.db

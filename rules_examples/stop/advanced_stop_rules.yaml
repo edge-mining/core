@@ -1,0 +1,128 @@
+rules:
+  - name: "Critical Battery Protection"
+    description: "CRITICAL: Stop mining immediately when battery is critically low"
+    conditions:
+      any_of:
+        - field: "energy_state.battery.state_of_charge"
+          operator: "lt"
+          value: 15  # Critical battery level
+        - field: "energy_state.battery.remaining_capacity"
+          operator: "lt"
+          value: 800  # Less than 800 WattHours remaining
+        - all_of:  # Battery discharging fast + low SOC
+            - field: "energy_state.battery.discharging_power"
+              operator: "lt"
+              value: 1000  # Discharging more than 1kW
+            - field: "energy_state.battery.state_of_charge"
+              operator: "lt"
+              value: 25
+    priority: 100  # Highest priority for safety
+    enabled: true
+
+  - name: "Grid Import Limit Protection"
+    description: "Stop mining when importing too much from grid"
+    conditions:
+      all_of:
+        - field: "energy_state.grid.importing_power"
+          operator: "gt"
+          value: 2500  # Importing more than 2.5kW
+        - any_of:
+            - field: "forecast.next_hour_power"
+              operator: "lt"
+              value: 1000  # Low solar forecast
+            - field: "energy_state.battery.state_of_charge"
+              operator: "lt"
+              value: 60  # Battery not high enough
+        - not_:  # Not during emergency charging hours
+            all_of:
+              - field: "timestamp.hour"
+                operator: "in"
+                value: [1, 2, 3, 4, 5]  # Very early morning
+              - field: "energy_state.battery.state_of_charge"
+                operator: "lt"
+                value: 30
+    priority: 80
+    enabled: true
+
+  - name: "Peak Home Consumption Stop"
+    description: "Stop mining during high home energy demand periods"
+    conditions:
+      all_of:
+        - field: "home_load_forecast"
+          operator: "gt"
+          value: 2800  # High predicted home consumption
+        - field: "timestamp.hour"
+          operator: "in"
+          value: [17, 18, 19, 20, 21, 22]  # Evening hours
+        - any_of:
+            - field: "energy_state.battery.state_of_charge"
+              operator: "lt"
+              value: 70
+            - field: "energy_state.production"
+              operator: "lt"
+              value: 1500  # Low current production
+    priority: 60
+    enabled: true
+
+  - name: "Weather-Based Stop"
+    description: "Stop mining when weather conditions deteriorate"
+    conditions:
+      all_of:
+        - field: "forecast.avg_next_4_hours_power"
+          operator: "lt"
+          value: 800  # Very low solar forecast
+        - field: "energy_state.production"
+          operator: "lt"
+          value: 1200  # Current production also low
+        - any_of:
+            - field: "energy_state.battery.state_of_charge"
+              operator: "lt"
+              value: 50
+            - field: "energy_state.grid.current_power"
+              operator: "gt"
+              value: 1500  # Importing significant power
+    priority: 40
+    enabled: true
+
+  - name: "Maintenance Window Stop"
+    description: "Scheduled maintenance stops"
+    conditions:
+      any_of:
+        - field: "timestamp.hour"
+          operator: "eq"
+          value: 3  # 3 AM maintenance
+        - field: "miner.status"
+          operator: "eq"
+          value: "ERROR"  # Stop on miner error
+        - all_of:  # Sunday early morning maintenance
+            - field: "timestamp.weekday"
+              operator: "eq"
+              value: 6  # Sunday
+            - field: "timestamp.hour"
+              operator: "in"
+              value: [2, 3, 4, 5]
+    priority: 70
+    enabled: true
+
+  - name: "Economic Stop"
+    description: "Stop mining when economic conditions are unfavorable"
+    conditions:
+      all_of:
+        - field: "energy_state.grid.importing_power"
+          operator: "gt"
+          value: 2000  # Importing significant power
+        - field: "energy_state.battery.state_of_charge"
+          operator: "lt"
+          value: 40  # Battery getting low
+        - field: "timestamp.hour"
+          operator: "in"
+          value: [16, 17, 18, 19, 20, 21, 22, 23]  # Peak rate hours
+        - any_of:
+            - field: "forecast.next_hour_power"
+              operator: "lt"
+              value: 500  # Very low next hour forecast
+            - field: "home_load_forecast"
+              operator: "gt"
+              value: 2500  # High home consumption expected
+    priority: 30
+    enabled: true

@@ -1,0 +1,59 @@
+{
+    "python.defaultInterpreterPath": "./.venv/bin/python",
+    "python.terminal.activateEnvironment": true,
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "editor.formatOnSave": false,
+    "editor.formatOnPaste": false,
+    "editor.rulers": [120],
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "[python]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        }
+    },
+    "[yaml]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true
+    },
+    "[json]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true
+    },
+    "emmet.includeLanguages": {
+        "yaml": "yaml"
+    },
+    "cSpell.words": [
+        "edgemining",
+        "mqtt",
+        "pydantic",
+        "sqlite",
+        "fastapi",
+        "pytest",
+        "mypy",
+        "flake8",
+        "bandit",
+        "isort",
+        "pylint",
+        "asyncio",
+        "uvicorn",
+        "cors",
+        "middleware",
+        "datetime",
+        "enum",
+        "uuid",
+        "sheduler",
+        "satoshi",
+        "hashrate",
+        "homeassistant"
+    ]
+}
