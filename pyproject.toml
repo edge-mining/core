@@ -62,6 +62,9 @@ telegram = [
 solar = [
     "astral>=3.2",
 ]
+pyasic = [
+    "pyasic==0.76.5"
+]
 all = [
     "edge-mining[api,homeassistant,mqtt,telegram,solar]",
 ]

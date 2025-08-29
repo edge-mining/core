@@ -21,3 +21,4 @@ class MinerControllerAdapter(AdapterType):
 
     DUMMY = "dummy"
     GENERIC_SOCKET_HOME_ASSISTANT_API = "generic_socket_home_assistant_api"
+    PYASIC = "pyasic"
